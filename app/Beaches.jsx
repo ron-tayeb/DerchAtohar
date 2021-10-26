@@ -22,7 +22,7 @@ import Geocoder from 'react-native-geocoding';
 export default function Beaches({ navigation, route }) {
 
     const [menuInSrartApp, setMenu] = useState(false)// בדיקה איזה מנות להציג בעת הפעלת האפליקציה
-    const MapAPI = 'AIzaSyBAkqZwFWriyyQoVAhIVcDV1sYmu36s8a4';
+    const MapAPI = '';
     const [item, setitem] = useState([ //מנות קבועות בעת הפעלת האפליקציה
     ]);
 

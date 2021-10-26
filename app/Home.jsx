@@ -43,7 +43,7 @@ export default function Home({ navigation, route }) {
     const [openSat, setopenSat] = useState('');
 
 
-    const MapAPI = "AIzaSyBAkqZwFWriyyQoVAhIVcDV1sYmu36s8a4"
+    const MapAPI = ""
     const storeData = async (key, value) => {//פעולה המאחסנת באסיינסטורג מידע
         try {
             const jsonValue = JSON.stringify(value)

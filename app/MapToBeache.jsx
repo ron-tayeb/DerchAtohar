@@ -19,7 +19,7 @@ import Geocoder from 'react-native-geocoding';
 
 
 export default function MapToBeache({ navigation, route }) {
-    const MapAPI = 'AIzaSyBAkqZwFWriyyQoVAhIVcDV1sYmu36s8a4';
+    const MapAPI = '';
     const [origin, setOrigin] = useState(null)
     const winW = Dimensions.get('window').width;
     const winH = Dimensions.get('window').height;
