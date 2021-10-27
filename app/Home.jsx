@@ -22,6 +22,7 @@ import * as Location from 'expo-location';
 import Geocoder from 'react-native-geocoding';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { getDistance, getPreciseDistance } from 'geolib';
+import { set } from "react-native-reanimated";
 
 
 export default function Home({ navigation, route }) {
@@ -30,11 +31,12 @@ export default function Home({ navigation, route }) {
     const [origin, setOrigin] = useState(null)
     const [Adress, setAdress] = React.useState(""); //שמירת כתובת 
     const [destination, setDestination] = useState(null);//מאתר מיקום 
-    const [distance, setdistance] = useState(0);//קרבה למקווה 
-    const [item, setitem] = useState([ //מנות קבועות בעת הפעלת האפליקציה
-    ]);
+    const [distance, setdistance] = useState(0);//הסלידר  
+    const [item, setitem] = useState([])//המערך מקוואת;
     const [forFilter, setforFilter] = useState(false);//בוליאני לפילטר סינון 
-    const [f, setF] = useState();//קרבה למקווה 
+    const [f, setF] = useState();
+    const [test, setteest] = useState([]);
+
 
     //שעות פתיחה
     const [openW, setOpenW] = useState('');
@@ -90,7 +92,17 @@ export default function Home({ navigation, route }) {
         filterDistance();
     }, [distance])
 
-    const filterDistance = async () => {
+
+
+    const changeItem = async(items) => {
+     await items.map((item, index) => (
+            getlocForFilter(item, index, items)
+        ))
+
+        
+    }
+
+    const filterDistance = () => {
         if (distance != 0) {
 
         }
@@ -98,18 +110,44 @@ export default function Home({ navigation, route }) {
             return;
         }
     }
-    const getlocForFilter =  (city, neighborhood) => {
-         Geocoder.init(MapAPI);
-        var name = neighborhood + " " + city
-         Geocoder.from(name)
-            .then( json => {
-                var location = json.results[0].geometry.location;
-                 console.log("sad", location);
-                
-    
-
+    const getlocForFilter = (card, i, items) => {
+        var itemState = items;
+        
+        Geocoder.init(MapAPI);
+        var name = card.neighborhood + " " + card.Religious_Council
+        Geocoder.from(name)
+            .then(json => {
+                var location = {
+                    latitude: json.results[0].geometry.location.lat,
+                    longitude: json.results[0].geometry.location.lng,
+                    latitudeDelta: 0.000922,
+                    longitudeDelta: 0.000421
+                };
+                var newItem = {
+                    Accessibility: card.Accessibility,
+                    City: card.city,
+                    Notes: card.Notes,
+                    Opening_Hours_Holiday_Eve_Shabat_Eve: card.Opening_Hours_Holiday_Eve_Shabat_Eve,
+                    Opening_Hours_Saturday_Night_Good_Day: card.Opening_Hours_Saturday_Night_Good_Day,
+                    Opening_Hours_Summer: card.Opening_Hours_Summer,
+                    Opening_Hours_Winter: card.Opening_Hours_Winter,
+                    Phone: card.Phone,
+                    Religious_Council: card.Religious_Council,
+                    Schedule_Appointment: card.Schedule_Appointment,
+                    mikveCode: card.mikveCode,
+                    neighborhood: card.neighborhood,
+                    nobody: card.nobody,
+                    location: location
+                }
+                itemState[i] = { newItem };
+                // itemState[i] = newItem;
+                setteest(itemState)
+                // setitem(itemState);    
             })
             .catch(error => console.warn(error));
+            
+        
+        console.log(`------------`, i)
     }
 
     const GetMenu = async (search) => { // משיכת התוכן לפי קטגוריה
@@ -130,8 +168,8 @@ export default function Home({ navigation, route }) {
                     return res.json()
                 })
                 .then((result) => {
-                    setitem(result)
-
+                    // setitem(result)
+                    // changeItem(result);
 
 
                 },
@@ -268,9 +306,16 @@ export default function Home({ navigation, route }) {
                 <ScrollView style={{ marginBottom: 20 }}>
                     {item.map((item, index) => (
                         <View key={index}>
-
+                            {console.log("rrrrrr", item)}
+                            {/* <MapViewDirections
+                                origin={origin}
+                                destination={item.location}
+                                apikey={MapAPI}
+                                onReady={result => {
+                                    setF(result.distance)
+                                }}
+                            /> */}
                             <View>
-                                {/* {console.log(`getlocForFilter(item.Religious_Council, item.neighborhood)`, getlocForFilter(item.Religious_Council, item.neighborhood))} */}
                                 <View style={{
                                     backgroundColor: "#FFF",
                                     width: "92%",
@@ -279,10 +324,11 @@ export default function Home({ navigation, route }) {
                                     borderRadius: 18,
                                     margin: 15,
                                 }}>
-                                    <Text style={{ marginLeft: "40%", marginTop: 2, color: '#0A268F', fontWeight: 'bold', fontSize: 18, }}>{item.Religious_Council}</Text>
+                                    <Text style={{ marginLeft: "40%", marginTop: 2, color: '#0A268F', fontWeight: 'bold', fontSize: 18, }}>{item.Religious_Council} </Text>
                                     <View style={[styles.desc, { flexDirection: "row" }]} >
                                         <Text style={[styles.desc1,]}>כתובת :</Text>
                                         <Text style={[styles.desc1]}>{item.neighborhood}</Text>
+
                                     </View>
                                     <View style={[styles.desc, { flexDirection: "row" }]} >
                                         <Text style={[styles.desc1,]}>פאלפון לתיאום :</Text>
@@ -295,7 +341,7 @@ export default function Home({ navigation, route }) {
                                                 color={"green"}
                                             />
                                         </TouchableOpacity>
-
+                                        <Text style={[styles.desc1]}>{f}</Text>
                                     </View>
                                     <TouchableOpacity style={styles.price1} onPress={() => { OpenModal(item) }}>
                                         <View style={{ flexDirection: 'row' }}>
@@ -320,15 +366,8 @@ export default function Home({ navigation, route }) {
                                                 /></Text>
                                             </View>
                                         </TouchableOpacity>
-                                        
-                                        {/* <MapViewDirections
-                                            origin={origin}
-                                            destination={x}
-                                            apikey={MapAPI}
-                                            onReady={result => {
-                                                console.log(`result.distance`, result.distance)
-                                            }}
-                                        /> */}
+
+
 
                                     </View>
                                 </View>
