@@ -131,7 +131,7 @@ export default function ManagerAddUsers({ navigation, route }) {
                 console.log("fetch POST", JSON.stringify(result))
                 if (JSON.stringify(result) == 1) {
                     Alert.alert("כל הכבוד", "הרשמת לקוח בוצעה בהצלחה")
-                    navigation.navigate("loginScreen")
+                    navigation.goBack();
                 }
                 else {
                     Alert.alert("אופס", "אימייל זה קיים במערכת אנא נסה שוב")

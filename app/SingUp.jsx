@@ -113,6 +113,8 @@ class SingUp extends React.Component {
             },
                 (error) => {
                     console.log("err POST=", error)
+                    Alert.alert("אופס", "לצערנו קיימת בעיה בשרתים אנא נסה שוב מאוחר יותר")
+                   
                 })
 
     }

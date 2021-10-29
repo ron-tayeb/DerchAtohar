@@ -103,6 +103,8 @@ class Login extends React.Component {
                 }
             } catch (e) {
                 console.log('error =', e);
+                Alert.alert("אופס", "לצערנו קיימת בעיה בשרתים אנא נסה שוב מאוחר יותר")
+                   
             }
         }
 
@@ -161,6 +163,7 @@ class Login extends React.Component {
             },
                 (error) => {
                     console.log("err POST=", error)
+                    Alert.alert("אופס", "לצערנו קיימת בעיה בשרתים אנא נסה שוב מאוחר יותר")
                 })
     }
     componentDidMount() { //דואג לרנדור מחדש של הדף במקרה של חזרה אליו
