@@ -20,6 +20,11 @@ import ManagerAddUsers from './app/ManagerAddUsers.jsx';
 import ManagerDelUsers from './app/ManagerDelUsers.jsx';
 import ManagerUpdateUsers from './app/ManagerUpdateUsers.jsx';
 import ManagerUpdateUsers2 from './app/ManagerUpdateUsers2.jsx';
+import AddMikve from './app/AddMikve.jsx';
+import DelMikve from './app/DelMikve.jsx';
+import UpdateMikve from './app/UpdateMikve.jsx';
+import UpdateMikve2 from './app/UpdateMikve2.jsx';
+
 
 
 const Stack = createStackNavigator();
@@ -92,7 +97,10 @@ const CustomDrwerContent = (props) => {
         <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >הוסף משתמש</Text>)} onPress={() => { props.navigation.navigate("ManagerAddUsersScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
         <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >מחק משתמש</Text>)} onPress={() => { props.navigation.navigate("ManagerDelUsersScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
         <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >ערוך משתמש</Text>)} onPress={() => { props.navigation.navigate("ManagerUpdateUsersScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
-
+        <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >הוסף מקווה</Text>)} onPress={() => { props.navigation.navigate("AddMikveScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
+        <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >מחק מקווה</Text>)} onPress={() => { props.navigation.navigate("DelMikveScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
+        <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >עדכן מקווה</Text>)} onPress={() => { props.navigation.navigate("UpdateMikveScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
+      
       </DrawerContentScrollView>
       <View style={styles.drowerfooter}>
       </View>
@@ -155,7 +163,22 @@ function MyDrawer() {
         name="ManagerUpdateUsers2Screen"
         component={ManagerUpdateUsers2}
       />
-      
+      <Drawer.Screen
+        name="AddMikveScreen"
+        component={AddMikve}
+      />
+      <Drawer.Screen
+        name="DelMikveScreen"
+        component={DelMikve}
+      />
+      <Drawer.Screen
+        name="UpdateMikveScreen"
+        component={UpdateMikve}
+      />
+      <Drawer.Screen
+        name="UpdateMikve2Screen"
+        component={UpdateMikve2}
+      />
       
     </Drawer.Navigator>
   );
@@ -181,7 +204,11 @@ export default function App() {
           <Stack.Screen name="ManagerDelUsersScreen" component={ManagerDelUsers} />
           <Stack.Screen name="ManagerUpdateUsersScreen" component={ManagerUpdateUsers} />
           <Stack.Screen name="ManagerUpdateUsers2Screen" component={ManagerUpdateUsers2} />
-
+          <Stack.Screen name="AddMikveScreen" component={AddMikve} />
+          <Stack.Screen name="DelMikveScreen" component={DelMikve} />
+          <Stack.Screen name="UpdateMikveScreen" component={UpdateMikve} />
+          <Stack.Screen name="UpdateMikve2Screen" component={UpdateMikve2} />
+          
         </Stack.Navigator>
       </MyDrawer>
     </NavigationContainer>

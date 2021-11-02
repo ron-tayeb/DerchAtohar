@@ -35,7 +35,7 @@ export default function Home({ navigation, route }) {
     const [item, setitem] = useState([])//המערך מקוואת;
     const [forFilter, setforFilter] = useState(false);//בוליאני לפילטר סינון 
     const [f, setF] = useState();
-    const [test, setteest] = useState([]);
+    const [lastItem, setlastItem] = useState([]);
 
 
     //שעות פתיחה
@@ -83,80 +83,69 @@ export default function Home({ navigation, route }) {
                 longitude: location.coords.longitude,
             })
             GetMenu('x')
+            console.log(`xxxxxxxxxxxx`)
         });
         return unsubscribe
     }, [])
 
-    useEffect(() => {
-        console.log(`distance`, distance)
-        filterDistance();
-    }, [distance])
+    const filterDistance = (distance1) => {
+        setdistance(distance1)
+        let newItem = new Array;
+        let newItem1 = new Array;
+        if (distance1 != 0) {
+            lastItem.map((item) => {
+                if (item.distance >= distance1) {
+                    newItem1.push()
+                }
+                if (item.distance <= distance1) {
+                    newItem.push(item)
+                }
 
-
-
-    const changeItem = async(items) => {
-     await items.map((item, index) => (
-            getlocForFilter(item, index, items)
-        ))
-
-        
-    }
-
-    const filterDistance = () => {
-        if (distance != 0) {
+            })
+            if (newItem.length > 0) {
+                setitem(newItem);
+            }
+            else { setitem(newItem1) }
 
         }
         else {
             return;
         }
     }
-    const getlocForFilter = (card, i, items) => {
-        var itemState = items;
-        
+
+    const GetCoords = (items) => {
         Geocoder.init(MapAPI);
-        var name = card.neighborhood + " " + card.Religious_Council
-        Geocoder.from(name)
-            .then(json => {
-                var location = {
+        items.map(async (item) => {
+            try {
+                var name = item.neighborhood + " " + item.Religious_Council
+                let json = await Geocoder.from(name);
+                let location = {
                     latitude: json.results[0].geometry.location.lat,
                     longitude: json.results[0].geometry.location.lng,
                     latitudeDelta: 0.000922,
                     longitudeDelta: 0.000421
-                };
-                var newItem = {
-                    Accessibility: card.Accessibility,
-                    City: card.city,
-                    Notes: card.Notes,
-                    Opening_Hours_Holiday_Eve_Shabat_Eve: card.Opening_Hours_Holiday_Eve_Shabat_Eve,
-                    Opening_Hours_Saturday_Night_Good_Day: card.Opening_Hours_Saturday_Night_Good_Day,
-                    Opening_Hours_Summer: card.Opening_Hours_Summer,
-                    Opening_Hours_Winter: card.Opening_Hours_Winter,
-                    Phone: card.Phone,
-                    Religious_Council: card.Religious_Council,
-                    Schedule_Appointment: card.Schedule_Appointment,
-                    mikveCode: card.mikveCode,
-                    neighborhood: card.neighborhood,
-                    nobody: card.nobody,
-                    location: location
                 }
-                itemState[i] = { newItem };
-                // itemState[i] = newItem;
-                setteest(itemState)
-                // setitem(itemState);    
-            })
-            .catch(error => console.warn(error));
-            
-        
-        console.log(`------------`, i)
+                item.location = location;
+
+            } catch (error) {
+                console.log(`error`, error)
+            }
+
+        })
+
+        setitem(items)
+        setlastItem(items)
+
     }
 
     const GetMenu = async (search) => { // משיכת התוכן לפי קטגוריה
+        setforFilter(false)
         if (search == "x") {
             return
         }
         else {
             var streetaddress = search.substr(0, search.indexOf(','));
-            fetch(`${ServerApi()}/api/getMekve`, {
+            await fetch(`${ServerApi()}/api/getMekve`, {
                 method: 'POST',
                 body: JSON.stringify(streetaddress),
                 headers: new Headers({
@@ -170,6 +159,7 @@ export default function Home({ navigation, route }) {
                 .then((result) => {
                     // setitem(result)
                     // changeItem(result);
+                    GetCoords(result);
 
 
                 },
@@ -216,7 +206,13 @@ export default function Home({ navigation, route }) {
             setforFilter(true)
         }
     }
+    const test = (dis, index) => {
+        item.distance = dis;
+        console.log(`lastItem[index]`, lastItem[index])
+        lastItem[index].distance = dis;
+        console.log(`lastItem[index]astItem[index]astItem[index]`, lastItem[index])
 
+    }
     return (
         <View style={styles.container}>
             <ImageBackground source={require('../assets/test.png')} resizeMode="cover" style={styles.image} >
@@ -295,7 +291,8 @@ export default function Home({ navigation, route }) {
                                     minimumTrackTintColor="#FFF"
                                     maximumTrackTintColor="#FFFFF"
                                     thumbTintColor="#FFF"
-                                    onValueChange={value => setdistance(value)}
+                                    onSlidingComplete={value => filterDistance(value)}
+                                    step={3}
                                 />
 
                             </View>
@@ -306,15 +303,13 @@ export default function Home({ navigation, route }) {
                 <ScrollView style={{ marginBottom: 20 }}>
                     {item.map((item, index) => (
                         <View key={index}>
-                            {console.log("rrrrrr", item)}
-                            {/* <MapViewDirections
+                            <MapViewDirections
                                 origin={origin}
                                 destination={item.location}
                                 apikey={MapAPI}
-                                onReady={result => {
-                                    setF(result.distance)
-                                }}
-                            /> */}
+                                onReady={result => test(result.distance, index)}
+
+                            />
                             <View>
                                 <View style={{
                                     backgroundColor: "#FFF",
@@ -341,8 +336,15 @@ export default function Home({ navigation, route }) {
                                                 color={"green"}
                                             />
                                         </TouchableOpacity>
-                                        <Text style={[styles.desc1]}>{f}</Text>
                                     </View>
+                                    {item.distance ?
+                                        <View style={[styles.desc, { flexDirection: "row", marginTop: -10 }]} >
+                                            <Text style={[styles.desc1,]}>מרחק :</Text>
+                                            <Text style={[styles.desc1]}>{item.distance} ק"מ</Text>
+                                        </View>
+                                        : null}
+
+
                                     <TouchableOpacity style={styles.price1} onPress={() => { OpenModal(item) }}>
                                         <View style={{ flexDirection: 'row' }}>
                                             <Text style={{ fontWeight: 'bold', fontSize: 13, color: "#fff" }}> שעות פתיחה </Text>

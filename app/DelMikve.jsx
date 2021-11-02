@@ -10,23 +10,22 @@ import {
     ImageBackground
 } from "react-native";
 import Feather from 'react-native-vector-icons/Feather';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 
 
 
-
-export default function ManagerUpdateUsers({ navigation, route }) {
+export default function DelMikve({ navigation, route }) {
     const [user, setUser] = useState()//אם יש משתמש מחובר היא מציגה אותו
     const [menuInSrartApp, setMenu] = useState(false)// בדיקה איזה מנות להציג בעת הפעלת האפליקציה
     const [cart, setCart] = useState([]) //שמירת המנות הנבחרות לעגלת קניות
     const [item, setitem] = useState([ //מנות קבועות בעת הפעלת האפליקציה
     ]);
     const [render, setRender] = useState(false)
-
-    
+    const MapAPI = ""
     const storeData = async (key, value) => {//פעולה המאחסנת באסיינסטורג מידע
         try {
             const jsonValue = JSON.stringify(value)
@@ -56,16 +55,43 @@ export default function ManagerUpdateUsers({ navigation, route }) {
         const api = `http://proj3.ruppin-tech.co.il`
         return api
     }
-
-    const GetUsers = async () => { // משיכת משתמשים
-        let v = await getData("user") //המשתמש שמחובר באסיינסטורג
-        if (v === undefined) {
-            await setUser(null)
+    const GetMenu = async (search) => { // משיכת התוכן לפי קטגוריה
+        if (search == "x") {
+            setitem([])
+            return
         }
-        else { await setUser(v) }
+        else {
+            var streetaddress = search.substr(0, search.indexOf(','));
+            console.log(`object`, streetaddress)
+            await fetch(`${ServerApi()}/api/getMekve`, {
+                method: 'POST',
+                body: JSON.stringify(streetaddress),
+                headers: new Headers({
+                    'Content-type': 'application/json; charset=UTF-8',
+                    'Accept': 'application/json; charset=UTF-8'
+                })
+            })
+                .then(res => {
+                    return res.json()
+                })
+                .then((result) => {
+                    setitem(result)
 
-        fetch(`${ServerApi()}/api/getAllUser`, {
-            method: 'GET',
+                },
+                    (error) => {
+                        console.log("err POST=", error)
+                        Alert.alert("אופס", "ישנה בעיה בעת שליפת הנתונים אנא נסה שוב מאוחר יותר")
+                    })
+        }
+
+
+    }
+    const deleteCustomer = async (item) => {//מחיקת משתמש
+        let mikveCode = item.mikveCode
+        console.log(`mikveCode`, mikveCode)
+        await fetch(`${ServerApi()}/api/DeleteMikve`, {
+            method: 'POST',
+            body: JSON.stringify(mikveCode),
             headers: new Headers({
                 'Content-type': 'application/json; charset=UTF-8',
                 'Accept': 'application/json; charset=UTF-8'
@@ -75,30 +101,21 @@ export default function ManagerUpdateUsers({ navigation, route }) {
                 return res.json()
             })
             .then((result) => {
-                setitem(result)
+                console.log("fetch POST=", result)
+                Alert.alert("ברכות", "משתמש זה הוסר בהצלחה")
             },
                 (error) => {
                     console.log("err POST=", error)
-                    Alert.alert("אופס", "ישנה בעיה בעת שליפת הנתונים אנא נסה שוב מאוחר יותר")
+                    Alert.alert("אופס", "ישנה בעיה בעת מחיקת המשתמש אנא נסה שוב מאוחר יותר")
                 })
-
+        setRender(true)
 
     }
-
-    const updateUser = (item) => {
-        navigation.navigate("ManagerUpdateUsers2Screen", { item })
-    }
-
-    useEffect(() => {//רינדור הדף והאזנה לכניסה מחדש לאותו מסך
-        const unsubscribe = navigation.addListener('focus', () => {//מאזין כל פעם שהוא נכנס לדף ומפעיל את הפונקציות הנבחרות
-            setRender(true)
-        });
-
-        return unsubscribe
-    }, [])
     useEffect(() => {
+        console.log(`1`)
+        GetMenu('x')
         setRender(false)
-        GetUsers()
+        
     }, [render])
 
     return (
@@ -123,8 +140,6 @@ export default function ManagerUpdateUsers({ navigation, route }) {
                             marginTop: 70,
                             width: '50%',
                             height: 90,
-
-                            marginTop:'25%'
                         }}
                     />
                     <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -137,7 +152,28 @@ export default function ManagerUpdateUsers({ navigation, route }) {
                 </View>
                 {/* שם של המתחבר */}
                 <View>
-                    {user == null ? null : <Text style={[styles.userlogin,{marginTop:15}]}> שלום {user.Name}</Text>}
+                    {user == null ? null : <Text style={styles.userlogin}> שלום {user.Name}</Text>}
+                </View>
+                <Text style={[styles.text_footer,{marginTop:50}]}>  *כדי למחוק מקווה יש לבחור את ישוב המקווה </Text>
+                <View style={styles.action1}>
+
+                    <GooglePlacesAutocomplete
+                        placeholder='הקלד כתובת'
+                        onPress={(data, details = null) => {
+                            let adress = data.description
+                            GetMenu(adress);
+
+                        }}
+                        query={{
+                            key: MapAPI,
+                            language: 'iw',
+                            components: 'country:il',
+                            type: "(cities)"
+
+                        }}
+                        enablePoweredByContainer={false}
+                        fetchDetails={true}
+                    />
                 </View>
                 {/* הצגת מנות */}
                 <ScrollView style={{ marginBottom: 40 }}>
@@ -152,20 +188,23 @@ export default function ManagerUpdateUsers({ navigation, route }) {
                                             height: 50,
                                             marginRight: 15,
                                             marginLeft: 15,
+
                                             margin: 15,
                                             borderTopLeftRadius: 18,
                                             borderBottomRightRadius: 18,
+                                            borderBottomLeftRadius: 18
                                         }}>
 
-                                        <Text style={styles.name}>{item.Name}</Text>
-                                        <Text style={styles.desc}>{item.Email} </Text></View>
-                                    <TouchableOpacity style={styles.price} onPress={() => updateUser(item)}>
+                                        <Text style={styles.name}>{item.City}</Text>
+                                        <Text style={styles.desc}>{item.neighborhood} </Text>
+                                    </View>
+                                    <TouchableOpacity style={styles.price} onPress={() => deleteCustomer(item)}>
                                         <View>
-                                            <Text style={{ fontWeight: 'bold', fontSize: 13, color: "#FFF" }}><MaterialIcons
-                                                name="published-with-changes"
+                                            <Text style={{ fontWeight: 'bold', fontSize: 13, color: "#FFF" }}><MaterialCommunityIcons
+                                                name="delete"
                                                 size={20}
                                                 color={"#FFF"}
-                                            /> ערוך </Text>
+                                            />מחק </Text>
                                         </View>
                                     </TouchableOpacity>
                                 </View>
@@ -183,20 +222,28 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#FFF',
     },
+    action1: {
+        flexDirection: 'row',
+        marginTop: 5,
+        paddingBottom: 0,
+        marginLeft: 30,
+        marginRight: 30,
+    },
+    text_footer: {
+        color: '#FFF',
+        fontSize: 16,
+        marginLeft: 25,
+        fontWeight: "bold",
+    },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-around',
 
-    },
-    textInput: {
-        textAlign: 'right',
-        flex: 1,
-        color: "#fff",
+
     },
     menu: {
         marginTop: 50,
-        color: '#FFF',
-        
+        color: "#fff"
     },
     shoppingCart: {
         marginTop: 50,
@@ -217,7 +264,7 @@ const styles = StyleSheet.create({
         marginLeft: "78.2%",
         height: 50,
         width: 15,
-        backgroundColor: "green",
+        backgroundColor: "red",
         borderBottomRightRadius: 18,
         borderTopLeftRadius: 25,
         alignItems: 'center',
@@ -262,7 +309,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start'
     },
     userlogin: {
-        fontWeight: 'bold', fontSize: 22, color: "#fff",
+        fontWeight: 'bold', fontSize: 22, color: "#FFF",
         marginLeft: 20,
     }
 

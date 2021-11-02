@@ -8,7 +8,9 @@ import {
     Alert,
     ImageBackground,
     Dimensions,
-    TextInput
+    TextInput,
+    ActivityIndicator,
+    Modal
 } from "react-native";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
@@ -37,6 +39,8 @@ export default function ManagerAddUsers({ navigation, route }) {
     const [conPass, setConPass] = useState(null);
     const [type, setType] = React.useState('user');
     const [checked, setChecked] = React.useState('');
+    const [modalLoadVisible, setModalLoadVisible] = useState(false);
+
 
     const storeData = async (key, value) => {//פונציקה לאחסנת מידע באסיינסטורג
         console.log(`value`, value)
@@ -73,7 +77,7 @@ export default function ManagerAddUsers({ navigation, route }) {
         setrenderScreen(false)
     }, [renderScreen])
 
-    const registerForPushNotificationsAsync= async ()=> {
+    const registerForPushNotificationsAsync = async () => {
         let token;
         if (Constants.isDevice) {
             const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -102,19 +106,17 @@ export default function ManagerAddUsers({ navigation, route }) {
         }
         return token;
     }
-
-
-
     const addCustomer = async () => {
         let token = await registerForPushNotificationsAsync()
         let user = {
             Name: name,
             Email: email,
             Password: password,
-            token:token,
+            token: token,
             type: type
         }
-        console.log("user",user)
+        console.log("user", user)
+        setModalLoadVisible(!modalLoadVisible)
         await fetch(`${ServerApi()}/api/createNewuser`, {
             method: 'POST',
             body: JSON.stringify(user),
@@ -128,6 +130,7 @@ export default function ManagerAddUsers({ navigation, route }) {
                 return res.json()
             })
             .then((result) => {
+                setModalLoadVisible(false)
                 console.log("fetch POST", JSON.stringify(result))
                 if (JSON.stringify(result) == 1) {
                     Alert.alert("כל הכבוד", "הרשמת לקוח בוצעה בהצלחה")
@@ -200,7 +203,7 @@ export default function ManagerAddUsers({ navigation, route }) {
                             marginTop: 100,
                             width: '55%',
                             height: 90,
-                            marginBottom:"10%"
+                            marginBottom: "10%"
                         }}
                     />
                     <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -291,18 +294,18 @@ export default function ManagerAddUsers({ navigation, route }) {
                                 secureTextEntry={true}
                             />
                         </View>
-                        <Text style={[styles.text_footer,{marginTop:'8%'}]}>מנהל מערכת</Text>
-                        <View style={{marginLeft:'5%',marginTop:'0%'}}>
-                            
+                        <Text style={[styles.text_footer, { marginTop: '8%' }]}>מנהל מערכת</Text>
+                        <View style={{ marginLeft: '5%', marginTop: '0%' }}>
+
                             <Checkbox
                                 status={checked ? 'checked' : 'unchecked'}
                                 onPress={() => {
                                     setChecked(!checked);
-                                    setType(!checked ? 'admin':'user')
+                                    setType(!checked ? 'admin' : 'user')
                                 }}
                                 color={"#FFF"}
                                 uncheckedColor={"#FFF"}
-                                
+
                             />
                         </View>
 
@@ -328,6 +331,19 @@ export default function ManagerAddUsers({ navigation, route }) {
                             </LinearGradient >
                         </View>
                     </TouchableOpacity>
+                    <Modal
+                        transparent={true}
+                        animationType={'none'}
+                        visible={modalLoadVisible}
+                        onRequestClose={() => { console.log('close modal') }}>
+                        <View style={styles.modalBackground}>
+                            <View style={styles.activityIndicatorWrapper}>
+                                <ActivityIndicator
+                                    size="large"
+                                    color='#282E68' />
+                            </View>
+                        </View>
+                    </Modal>
 
                 </View>
             </ImageBackground>
@@ -339,6 +355,22 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
+    modalBackground: {
+        flex: 1,
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'space-around',
+        backgroundColor: '#00000040'
+      },
+      activityIndicatorWrapper: {
+        backgroundColor: '#FFFFFF',
+        height: 100,
+        width: 100,
+        borderRadius: 10,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-around'
+      },
     action: {
         flexDirection: 'row',
         marginTop: 5,
