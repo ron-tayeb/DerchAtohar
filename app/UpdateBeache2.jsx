@@ -8,20 +8,23 @@ import {
     Alert,
     ImageBackground,
     Dimensions,
-    TextInput,
-    ActivityIndicator,
-    Modal
+    Modal,
+    TextInput, ActivityIndicator
 } from "react-native";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Checkbox } from 'react-native-paper';
-import * as Notifications from 'expo-notifications';
-import Constants from 'expo-constants';
+import { Picker } from '@react-native-picker/picker';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+import { Camera } from 'expo-camera';
 
-export default function ManagerAddUsers({ navigation, route }) {
+
+export default function UpdateBeache2({ navigation, route }) {
     const winW = Dimensions.get('window').width;
     const winH = Dimensions.get('window').height;
 
@@ -31,17 +34,24 @@ export default function ManagerAddUsers({ navigation, route }) {
     const [modalVisible, setModalVisible] = useState(false);//בשביל המודל
     const [hasPermission, setHasPermission] = useState(null);
     // const [type, setType] = useState(Camera.Constants.Type.back);
-
-
-    const [name, setName] = useState(null);
-    const [email, setEmail] = useState(null);
-    const [password, setPassword] = useState(null);
-    const [conPass, setConPass] = useState(null);
-    const [type, setType] = React.useState('user');
-    const [checked, setChecked] = React.useState('');
     const [modalLoadVisible, setModalLoadVisible] = useState(false);
 
+    const [name, setName] = useState(null);
+    const [gander, setGander] = useState(null);
+    const [opemimgHours, setopemimgHours] = useState(null);
+    const [address, setAddress] = useState(null);
+    const [price, setPrice] = useState(null);
+    const [district, setDistrict] = useState(null);
+    const [beacheCode, setBeachCode] = useState();
 
+
+    const pickerRef = useRef();
+    function open() {
+        pickerRef.current.focus();
+    }
+    function close() {
+        pickerRef.current.blur();
+    }
     const storeData = async (key, value) => {//פונציקה לאחסנת מידע באסיינסטורג
         console.log(`value`, value)
         try {
@@ -69,118 +79,100 @@ export default function ManagerAddUsers({ navigation, route }) {
         }
         console.log('Done.')
     }
-    const ServerApi = () => { // כתובת שרת
+    function ServerApi() {// הלוקל הוסט
         const api = `http://proj3.ruppin-tech.co.il`
         return api
     }
+    
+    useEffect(() => { 
+        const unsubscribe = navigation.addListener('focus',async () => {//מאזין כל פעם שהוא נכנס לדף ומפעיל את הפונקציות הנבחרות
+            let beache = route.params.item
+            setName(beache.Name)
+            setopemimgHours(beache.opemimgHours)
+            setDistrict(beache.District)
+            setPrice(beache.Payment)
+            setAddress(beache.Address)
+            setGander(beache.MenOrWomen)
+            setBeachCode(beache.BeachesCode)
+
+        });
+        return unsubscribe
+    })
+
+
+  
     useEffect(() => {
         setrenderScreen(false)
     }, [renderScreen])
 
-    const registerForPushNotificationsAsync = async () => {
-        let token;
-        if (Constants.isDevice) {
-            const { status: existingStatus } = await Notifications.getPermissionsAsync();
-            let finalStatus = existingStatus;
-            if (existingStatus !== 'granted') {
-                const { status } = await Notifications.requestPermissionsAsync();
-                finalStatus = status;
+    const updateBeache1 = async () => {
+        if (checkDeitles()) {
+            let beache = {
+                Name: name,
+                OpemimgHours: opemimgHours,
+                MenOrWomen: gander,
+                Address: address,
+                Payment: price,
+                District: district,
+                BeachesCode:beacheCode
             }
-            if (finalStatus !== 'granted') {
-                alert('Failed to get push token for push notification!');
-                return;
-            }
-            token = (await Notifications.getExpoPushTokenAsync()).data;
-            console.log(token);
-        } else {
-            alert('Must use physical device for Push Notifications');
-        }
-
-        if (Platform.OS === 'android') {
-            Notifications.setNotificationChannelAsync('default', {
-                name: 'default',
-                importance: Notifications.AndroidImportance.MAX,
-                vibrationPattern: [0, 250, 250, 250],
-                lightColor: '#FF231F7C',
-            });
-        }
-        return token;
-    }
-    const addCustomer = async () => {
-        let token = await registerForPushNotificationsAsync()
-        let user = {
-            Name: name,
-            Email: email,
-            Password: password,
-            token: token,
-            type: type
-        }
-        console.log("user", user)
-        setModalLoadVisible(!modalLoadVisible)
-        await fetch(`${ServerApi()}/api/createNewuser`, {
-            method: 'POST',
-            body: JSON.stringify(user),
-            headers: new Headers({
-                'Content-type': 'application/json; charset=UTF-8',
-                'Accept': 'application/json; charset=UTF-8'
-            })
-        })
-            .then(res => {
-                console.log('res=', JSON.stringify(res))
-                return res.json()
-            })
-            .then((result) => {
-                setModalLoadVisible(false)
-                console.log("fetch POST", JSON.stringify(result))
-                if (JSON.stringify(result) == 1) {
-                    Alert.alert("כל הכבוד", "הרשמת לקוח בוצעה בהצלחה")
-                    navigation.goBack();
-                }
-                else {
-                    Alert.alert("אופס", "אימייל זה קיים במערכת אנא נסה שוב")
-                }
-
-
-
-            },
-                (error) => {
-                    console.log("err POST=", error)
-                    Alert.alert("אופס", "ישנה בעיה בשרת אנא פנה למנהל מערכת")
+            console.log(`beache`, beache)
+            setModalLoadVisible(!modalLoadVisible)
+            await fetch(`${ServerApi()}/api/UpdateBeache`, {
+                method: 'POST',
+                body: JSON.stringify(beache),
+                headers: new Headers({
+                    'Content-type': 'application/json; charset=UTF-8',
+                    'Accept': 'application/json; charset=UTF-8'
                 })
-        setName("")
-        setEmail("")
-        setPassword("")
-        setConPass("")
-        setType("user")
-        setChecked(!checked)
-        setrenderScreen(true)
-    }
-    const userVal = () => {//וולידציה להרשמה שמפעילה את המטודה שמבצעת הרשמה
-        var emailregex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/; // שימוש בריגיקס
-        var pasRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\w\s]).{8,}$/;
-        if (!(emailregex.test(email))) {
-            Alert.alert("אופס", "האימל שהוכנס לא תואם לפורמט אנא נסה בפורמט הבא: name@example.com")
-            setEmail("")
-            return
-        }
-        if (!(pasRegex.test(password))) {
-            Alert.alert("אופס", "הסיסמה צריכה להכיל לפחות: 8 תווים , אות גדולה , אות קטנה ,תו , ומספר")
-            setPassword("")
-            setConPass("")
-            return
-        }
-        if (password !== conPass) {
-            Alert.alert("אופס", "הסיסמאות לא זהות , אנא נסה שוב")
-            setPassword("")
-            setConPass("")
-            return
+            })
+                .then(res => {
+                    return res.json()
+                })
+                .then((result) => {
+                    console.log("fetch POST", result)
+                    setModalLoadVisible(false)
+                    if (result=="Beache update"||result.isOk) {
+                        Alert.alert("ברכות", "החוף עודכן ")
+                    }
+                    else {
+                        Alert.alert("אופס", "קרתה טעות בעת העלאת החוף אנא נסה שוב ")
+                    }
+                },
+                    (error) => {
+                        console.log("err POST=", error)
+                        Alert.alert("אופס", "קרתה טעות בעת העלאת הבריכה אנא נסה שוב ")
+                    })
+            setName("");
+            setPrice("");
+            setopemimgHours("");
+            setAddress("");
+            setGander("");
+            setDistrict("")         
         }
         else {
-            addCustomer();
+            return
         }
 
     }
+    const checkDeitles = () => {
+        if (name == null) {
+            Alert.alert("אופס", "חסרים פרטים אנא השלם אותם ונסה שנית")
+            setName('')
+            return false
+        }
 
+        if (district == '') {
+            Alert.alert("אופס", "אנא בחר מחוז")
+            return false
+        }
+        if (address == null) {
+            Alert.alert("אופס", "אנא הוסף רחוב")
+            setDesc(null)
+            return false
+        }
+        else { return true }
+    }
 
     return (
         <View style={{ backgroundColor: "#FFF", height: '100%' }}>
@@ -197,13 +189,12 @@ export default function ManagerAddUsers({ navigation, route }) {
                         />
                     </TouchableOpacity>
                     <Image
-                        source={require('../assets/logos/27.png')}
+                        source={require('../assets/logos/32.png')}
                         resizeMode='contain'
                         style={{
-                            marginTop: 100,
+                            marginTop: 50,
                             width: '55%',
                             height: 90,
-                            marginBottom: "10%"
                         }}
                     />
                     <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -216,11 +207,12 @@ export default function ManagerAddUsers({ navigation, route }) {
                 </View>
 
                 <View>
-                    <View style={{}}>
-                        <Text style={styles.text_footer}>שם</Text>
+                  
+                    <View style={{ marginTop: 20, marginBottom: 20 }}>
+                        <Text style={styles.text_footer}>שם החוף</Text>
                         <View style={styles.action}>
-                            <FontAwesome
-                                name="user-o"
+                            <MaterialIcons
+                                name="location-city"
                                 color="#FFF"
                                 size={20}
                                 style={{ paddingLeft: 10 }}
@@ -228,90 +220,115 @@ export default function ManagerAddUsers({ navigation, route }) {
                             <TextInput
                                 placeholder="הכנס שם..."
                                 placeholderTextColor="#fff"
+                                keyboardType="email-address"
                                 style={styles.textInput}
+                                // onChangeText={(text) => setName(text)}
                                 onChangeText={setName}
                                 value={name}
                             />
                         </View>
                     </View>
+                    <View style={{ marginTop: 20, marginBottom: 20 }}>
+                        <Text style={styles.text_footer}>כתובת</Text>
+                        <View style={styles.action}>
+                            <MaterialCommunityIcons
+                                name="home-group"
+                                color="#FFF"
+                                size={20}
+                                style={{ paddingLeft: 10 }}
+                            />
+                            <TextInput
+                                placeholder="הכנס כתובת..."
+                                placeholderTextColor="#fff"
+                                keyboardType="email-address"
+                                style={styles.textInput}
+                                // onChangeText={(text) => setName(text)}
+                                onChangeText={setAddress}
+                                value={address}
+                            />
+                        </View>
+                    </View>
 
                     <View style={{ marginTop: 20, marginBottom: 20 }}>
-                        <Text style={styles.text_footer}>אימייל</Text>
+                        <Text style={styles.text_footer}>תשלום</Text>
                         <View style={styles.action}>
                             <FontAwesome
-                                name="user-o"
+                                name="shekel"
                                 color="#FFF"
                                 size={20}
                                 style={{ paddingLeft: 10 }}
                             />
                             <TextInput
-                                placeholder="הכנס אימייל..."
-                                placeholderTextColor="#fff"
-                                keyboardType='email-address'
+                                placeholder="...הכנס מחיר"
+                                keyboardType='numeric'
                                 style={[styles.textInput, { textAlign: 'right' }]}
-                                onChangeText={setEmail}
-                                value={email}
-
+                                onChangeText={setPrice}
+                                value={price}
+                                placeholderTextColor="#fff"
                             />
                         </View>
                     </View>
 
                     <View style={{ marginTop: 20, marginBottom: 20 }}>
-                        <Text style={styles.text_footer}>סיסמא</Text>
+                        <Text style={styles.text_footer}>שעות פתיחה</Text>
                         <View style={styles.action}>
-                            <Feather
-                                name="lock"
+                            <MaterialCommunityIcons
+                                name="clock-outline"
                                 color="#FFF"
-                                size={20}
+                                size={30}
                                 style={{ paddingLeft: 10 }}
                             />
                             <TextInput
-                                placeholder="הכנס סיסמא..."
+                                placeholder="...הכנס שעות פתיחה גברים/נשים"
                                 placeholderTextColor="#fff"
                                 style={[styles.textInput, { textAlign: 'right' }]}
-                                onChangeText={setPassword}
-                                value={password}
-                                secureTextEntry={true}
+                                onChangeText={setopemimgHours}
+                                value={opemimgHours}
 
                             />
                         </View>
                     </View>
                     <View style={{ marginTop: 20, marginBottom: 20 }}>
-                        <Text style={styles.text_footer}>אימות סיסמא</Text>
+                        <Text style={styles.text_footer}>מגדר</Text>
                         <View style={styles.action}>
-                            <Feather
-                                name="lock"
+                            <FontAwesome
+                                name="phone"
                                 color="#FFF"
-                                size={20}
+                                size={30}
                                 style={{ paddingLeft: 10 }}
                             />
                             <TextInput
-                                placeholder="הכנס סיסמא שוב..."
+                                placeholder="הכנס מגדר - פרטי נשים/גברים..."
+                                
                                 placeholderTextColor="#fff"
                                 style={styles.textInput}
-                                onChangeText={setConPass}
-                                value={conPass}
-                                secureTextEntry={true}
+                                onChangeText={setGander}
+                                value={gander}
                             />
                         </View>
-                        <Text style={[styles.text_footer, { marginTop: '8%' }]}>מנהל מערכת</Text>
-                        <View style={{ marginLeft: '5%', marginTop: '0%' }}>
-
-                            <Checkbox
-                                status={checked ? 'checked' : 'unchecked'}
-                                onPress={() => {
-                                    setChecked(!checked);
-                                    setType(!checked ? 'admin' : 'user')
-                                }}
-                                color={"#FFF"}
-                                uncheckedColor={"#FFF"}
-
-                            />
-                        </View>
-
+                    </View>
+                    <View style={{}}>
+                    <Text style={[styles.text_footer,]}>קטגוריה</Text>
+                    <View style={{ flexDirection: 'row', marginLeft: 20 }}>
+                        <Picker
+                            style={{
+                                justifyContent: 'space-between', flex: 8, marginRight: 260,color:'#fff'}}
+                            ref={pickerRef}
+                            selectedValue={district}
+                            onValueChange={(itemValue, itemIndex) =>
+                                setDistrict(itemValue)
+                            }>
+                            <Picker.Item label="בחר" value=""  />
+                            <Picker.Item label="צפון" value="צפון" />
+                            <Picker.Item label="דרום" value="דרום" />
+                            <Picker.Item label="מרכז" value="מרכז" />
+                        </Picker>
                     </View>
 
-                    <TouchableOpacity onPress={() => { userVal() }}>
+                </View>
+
+                    
+                    <TouchableOpacity onPress={() => { updateBeache1() }}>
                         <View style={[styles.button, { marginTop: 30, }]} >
                             <LinearGradient
                                 colors={['#063496', "#59AFFA"]}
@@ -323,30 +340,29 @@ export default function ManagerAddUsers({ navigation, route }) {
                                     },
                                     shadowOpacity: 0.25,
                                     shadowRadius: 3.84,
-
                                     elevation: 5,
 
                                 }]}>
-                                <Text style={styles.textlogin}>          הוסף לקוח          </Text>
+                                <Text style={[styles.textlogin, { color: "#fff" }]}>          ערוף חוף          </Text>
                             </LinearGradient >
                         </View>
                     </TouchableOpacity>
-                    <Modal
-                        transparent={true}
-                        animationType={'none'}
-                        visible={modalLoadVisible}
-                        onRequestClose={() => { console.log('close modal') }}>
-                        <View style={styles.modalBackground}>
-                            <View style={styles.activityIndicatorWrapper}>
-                                <ActivityIndicator
-                                    size="large"
-                                    color='#282E68' />
-                            </View>
-                        </View>
-                    </Modal>
 
                 </View>
             </ImageBackground>
+            <Modal
+                transparent={true}
+                animationType={'none'}
+                visible={modalLoadVisible}
+                onRequestClose={() => { console.log('close modal') }}>
+                <View style={styles.modalBackground}>
+                    <View style={styles.activityIndicatorWrapper}>
+                        <ActivityIndicator
+                            size="large"
+                            color='#282E68' />
+                    </View>
+                </View>
+            </Modal>
         </View >
 
     )
@@ -354,6 +370,13 @@ export default function ManagerAddUsers({ navigation, route }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+
+    },
+    textInput: {
+        textAlign: 'right',
+        flex: 1,
+        paddingLeft: 10,
+        color: "#fff",
     },
     modalBackground: {
         flex: 1,
@@ -361,8 +384,9 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'space-around',
         backgroundColor: '#00000040'
-      },
-      activityIndicatorWrapper: {
+    },
+
+    activityIndicatorWrapper: {
         backgroundColor: '#FFFFFF',
         height: 100,
         width: 100,
@@ -370,7 +394,7 @@ const styles = StyleSheet.create({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-around'
-      },
+    },
     action: {
         flexDirection: 'row',
         marginTop: 5,
@@ -391,11 +415,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
 
 
-    },
-    textInput: {
-        textAlign: 'right',
-        flex: 1,
-        color: "#fff",
     },
     menu: {
         marginTop: 50,
@@ -430,12 +449,12 @@ const styles = StyleSheet.create({
         marginRight: '55%',
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 18,
+        borderRadius: 180,
         marginLeft: '5%'
     },
 
     textlogin: {
-        fontWeight: 'bold', fontSize: 15, color: "#FFF",
+        fontWeight: 'bold', fontSize: 15, color: "#282E68",
     },
     modalView: {
         justifyContent: 'space-between',

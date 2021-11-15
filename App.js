@@ -24,7 +24,16 @@ import AddMikve from './app/AddMikve.jsx';
 import DelMikve from './app/DelMikve.jsx';
 import UpdateMikve from './app/UpdateMikve.jsx';
 import UpdateMikve2 from './app/UpdateMikve2.jsx';
-
+import Pools from './app/Pools.jsx';
+import ManagrDelPool from './app/ManagrDelPool.jsx';
+import AddPool from './app/AddPool.jsx';
+import UpdatePool from './app/UpdatePool.jsx';
+import UpdatePool2 from './app/UpdatePool2.jsx';
+import AddBeache from './app/AddBeache.jsx';
+import DelBeache from './app/DelBeache.jsx';
+import UpdateBeache from './app/UpdateBeache.jsx';
+import UpdateBeache2 from './app/UpdateBeache2.jsx';
+import ManagerHome from './app/HomePage.jsx';
 
 
 const Stack = createStackNavigator();
@@ -87,20 +96,30 @@ const CustomDrwerContent = (props) => {
         <Image source={require('./assets/logos/1.png')} style={{ height: 90, width: "100%", marginTop: 75, marginLeft: -7 }} />
       </View>
       <DrawerContentScrollView >
+      {uObj.type=="admin" ?<DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >דף הבית</Text>)} onPress={() => { props.navigation.navigate("ManagerHomeScreen"); props.navigation.closeDrawer(); }}></DrawerItem> : null}
+        <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >מצא בריכה</Text>)} onPress={() => { props.navigation.navigate("PoolsScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
         <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >מצא חוף</Text>)} onPress={() => { props.navigation.navigate("BeachesScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
         <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >מצא מקווה</Text>)} onPress={() => { props.navigation.navigate("HomeScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
+        <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >שער ההלכה</Text>)} onPress={() => { props.navigation.navigate("HlachaScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
         {user ? null : <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >הרשם</Text>)} onPress={() => { props.navigation.navigate("SingUpScreen"); props.navigation.closeDrawer(); }}></DrawerItem>}
         {user ? null : <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >התחבר</Text>)} onPress={() => { props.navigation.navigate("loginScreen"); props.navigation.closeDrawer(); }}></DrawerItem>}
-        <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >שער ההלכה</Text>)} onPress={() => { props.navigation.navigate("HlachaScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
-        {user ? <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >התנתק</Text>)} onPress={() => logOut()}></DrawerItem> : null}
-        <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >מפה</Text>)} onPress={() => { props.navigation.navigate("MapToBeacheScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
-        <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >הוסף משתמש</Text>)} onPress={() => { props.navigation.navigate("ManagerAddUsersScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
-        <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >מחק משתמש</Text>)} onPress={() => { props.navigation.navigate("ManagerDelUsersScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
-        <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >ערוך משתמש</Text>)} onPress={() => { props.navigation.navigate("ManagerUpdateUsersScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
-        <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >הוסף מקווה</Text>)} onPress={() => { props.navigation.navigate("AddMikveScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
-        <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >מחק מקווה</Text>)} onPress={() => { props.navigation.navigate("DelMikveScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
-        <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >עדכן מקווה</Text>)} onPress={() => { props.navigation.navigate("UpdateMikveScreen"); props.navigation.closeDrawer(); }}></DrawerItem>
+        {user ? <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >התנתק</Text>)} onPress={() => logOut()}></DrawerItem> : null} 
+        {uObj.type=="admin" ?<DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >ערוך משתמש</Text>)} onPress={() => { props.navigation.navigate("ManagerUpdateUsersScreen"); props.navigation.closeDrawer(); }}></DrawerItem>:null}
+        {uObj.type=="admin" ?<DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >ערוך בריכה</Text>)} onPress={() => { props.navigation.navigate("UpdatePoolScreen"); props.navigation.closeDrawer(); }}></DrawerItem>:null}
+        {uObj.type=="admin" ?<DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >ערוך מקווה</Text>)} onPress={() => { props.navigation.navigate("UpdateMikveScreen"); props.navigation.closeDrawer(); }}></DrawerItem>:null}
+        {uObj.type=="admin" ? <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >ערוך חוף</Text>)} onPress={() => { props.navigation.navigate("UpdateBeacheScreen"); props.navigation.closeDrawer(); }}></DrawerItem>:null}
+        {uObj.type=="admin" ? <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >הוסף משתמש</Text>)} onPress={() => { props.navigation.navigate("ManagerAddUsersScreen"); props.navigation.closeDrawer(); }}></DrawerItem> : null}
+        {uObj.type=="admin" || uObj.type=="user"  ? <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >הוספת בריכה</Text>)} onPress={() => { props.navigation.navigate("AddPoolScreen"); props.navigation.closeDrawer(); }}></DrawerItem>:null}
+        {uObj.type=="admin" || uObj.type=="user"  ? <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >הוסף מקווה</Text>)} onPress={() => { props.navigation.navigate("AddMikveScreen"); props.navigation.closeDrawer(); }}></DrawerItem>:null}
+        {uObj.type=="admin" || uObj.type=="user"  ? <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >הוספת חוף</Text>)} onPress={() => { props.navigation.navigate("AddBeacheScreen"); props.navigation.closeDrawer(); }}></DrawerItem>:null}
+        {uObj.type=="admin" ?  <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >מחיקת חוף</Text>)} onPress={() => { props.navigation.navigate("DelBeacheScreen"); props.navigation.closeDrawer(); }}></DrawerItem>:null}
+        {uObj.type=="admin" ? <DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >מחיקת בריכה</Text>)} onPress={() => { props.navigation.navigate("ManagrDelPoolScreen"); props.navigation.closeDrawer(); }}></DrawerItem>:null}
+        {uObj.type=="admin" ?<DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >מחק מקווה</Text>)} onPress={() => { props.navigation.navigate("DelMikveScreen"); props.navigation.closeDrawer(); }}></DrawerItem>:null}
+        {uObj.type=="admin" ?<DrawerItem style={styles.signup} label={() => (<Text style={styles.signupT} >מחק משתמש</Text>)} onPress={() => { props.navigation.navigate("ManagerDelUsersScreen"); props.navigation.closeDrawer(); }}></DrawerItem> : null}
+
       
+        
+        
       </DrawerContentScrollView>
       <View style={styles.drowerfooter}>
       </View>
@@ -179,6 +198,47 @@ function MyDrawer() {
         name="UpdateMikve2Screen"
         component={UpdateMikve2}
       />
+      <Drawer.Screen
+        name="PoolsScreen"
+        component={Pools}
+      />
+      <Drawer.Screen
+        name="ManagrDelPoolScreen"
+        component={ManagrDelPool}
+      />
+      <Drawer.Screen
+        name="AddPoolScreen"
+        component={AddPool}
+      />
+      <Drawer.Screen
+        name="UpdatePoolScreen"
+        component={UpdatePool}
+      />
+      <Drawer.Screen
+        name="UpdatePool2Screen"
+        component={UpdatePool2}
+      />
+      <Drawer.Screen
+        name="AddBeacheScreen"
+        component={AddBeache}
+      />
+      <Drawer.Screen
+        name="DelBeacheScreen"
+        component={DelBeache}
+      />
+      <Drawer.Screen
+        name="UpdateBeacheScreen"
+        component={UpdateBeache}
+      />
+      <Drawer.Screen
+        name="UpdateBeache2Screen"
+        component={UpdateBeache2}
+      />
+      <Drawer.Screen
+        name="ManagerHomeScreen"
+        component={ManagerHome}
+      />
+
       
     </Drawer.Navigator>
   );
@@ -208,6 +268,16 @@ export default function App() {
           <Stack.Screen name="DelMikveScreen" component={DelMikve} />
           <Stack.Screen name="UpdateMikveScreen" component={UpdateMikve} />
           <Stack.Screen name="UpdateMikve2Screen" component={UpdateMikve2} />
+          <Stack.Screen name="PoolsScreen" component={Pools} />
+          <Stack.Screen name="ManagrDelPoolScreen" component={ManagrDelPool} />
+          <Stack.Screen name="AddPoolScreen" component={AddPool} />
+          <Stack.Screen name="UpdatePoolScreen" component={UpdatePool} />
+          <Stack.Screen name="UpdatePool2Screen" component={UpdatePool2} />
+          <Stack.Screen name="AddBeacheScreen" component={AddBeache} />
+          <Stack.Screen name="DelBeacheScreen" component={DelBeache} />
+          <Stack.Screen name="UpdateBeacheScreen" component={UpdateBeache} />
+          <Stack.Screen name="UpdateBeache2Screen" component={UpdateBeache2} />
+          <Stack.Screen name="ManagerHomeScreen" component={ManagerHome} />
           
         </Stack.Navigator>
       </MyDrawer>

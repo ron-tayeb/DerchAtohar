@@ -14,15 +14,15 @@ import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Geocoder from 'react-native-geocoding';
 
 
 
 
-
-export default function Hlacha({ navigation, route }) {
+export default function Beaches({ navigation, route }) {
 
     const [menuInSrartApp, setMenu] = useState(false)// בדיקה איזה מנות להציג בעת הפעלת האפליקציה
-
+    const MapAPI = '';
     const [item, setitem] = useState([ //מנות קבועות בעת הפעלת האפליקציה
     ]);
 
@@ -62,10 +62,10 @@ export default function Hlacha({ navigation, route }) {
 
         return unsubscribe
     }, [])
-    const GetMenu = async (category) => { // משיכת התוכן לפי קטגוריה
-        fetch(`${ServerApi()}/api/getHlacha`, {
+    const GetMenu = async (District) => { // משיכת התוכן לפי קטגוריה
+        fetch(`${ServerApi()}/api/GetBeaches`, {
             method: 'POST',
-            body: JSON.stringify(category),
+            body: JSON.stringify(District),
             headers: new Headers({
                 'Content-type': 'application/json; charset=UTF-8',
                 'Accept': 'application/json; charset=UTF-8'
@@ -86,7 +86,11 @@ export default function Hlacha({ navigation, route }) {
 
 
     }
+    
 
+    const updateBeache = (item) => {
+        navigation.navigate("UpdateBeache2Screen", { item })
+    }
 
 
     return (
@@ -103,7 +107,7 @@ export default function Hlacha({ navigation, route }) {
                         />
                     </TouchableOpacity>
                     <Image
-                        source={require('../assets/logos/24.png')}
+                        source={require('../assets/logos/32.png')}
                         resizeMode='contain'
                         style={{
                             marginTop: 70,
@@ -121,9 +125,9 @@ export default function Hlacha({ navigation, route }) {
                 </View>
                 {/* קטגוריות */}
                 <View style={styles.catgor}>
-                    <TouchableOpacity onPress={() => { GetMenu('forWomen') }}>
+                    <TouchableOpacity onPress={() => { GetMenu('צפון') }}>
                         <Image
-                            source={require('../assets/1.png')}
+                            source={require('../assets/11.png')}
                             resizeMode="contain"
                             style={{
                                 width: 100,
@@ -134,9 +138,9 @@ export default function Hlacha({ navigation, route }) {
                             }}
                         />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => { GetMenu('tfilaWomen') }}>
+                    <TouchableOpacity onPress={() => { GetMenu('מרכז') }}>
                         <Image
-                            source={require('../assets/5.png')}
+                            source={require('../assets/22.png')}
                             resizeMode="contain"
                             style={{
                                 width: 100,
@@ -147,9 +151,9 @@ export default function Hlacha({ navigation, route }) {
                         />
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => { GetMenu('tfilaMen') }}>
+                    <TouchableOpacity onPress={() => { GetMenu('דרום') }}>
                         <Image
-                            source={require('../assets/4.png')}
+                            source={require('../assets/33.png')}
                             resizeMode='contain'
                             style={{
                                 width: 100,
@@ -160,7 +164,7 @@ export default function Hlacha({ navigation, route }) {
                         />
                     </TouchableOpacity>
                 </View>
-                {/* הצגת הלכות */}
+                {/* הצגת חופים */}
                 <ScrollView style={{ marginBottom: 20 }}>
                     {item.map((item, index) => (
                         <View key={index}>
@@ -174,8 +178,20 @@ export default function Hlacha({ navigation, route }) {
                                     borderRadius: 18,
                                     margin: 15,
                                 }}>
-                                    <Text style={{ marginLeft: 15, marginTop: 2, color: '#0A268F', fontWeight: 'bold', fontSize: 16, }}>{item.Title}</Text>
-                                    <Text style={styles.desc}>{item.Content} </Text>
+                                    <Text style={{ marginLeft: 15, marginTop: 2, color: '#0A268F', fontWeight: 'bold', fontSize: 17, }}>{item.Name}</Text>
+                                    <Text style={styles.desc}>מגדר: {item.MenOrWomen} </Text> 
+                                    <Text style={styles.desc}>שעות פתיחה: {item.opemimgHours} </Text>
+                                    <Text style={styles.desc}>כתובת: {item.Address} </Text>
+                                    <Text style={styles.desc}>מחיר: {item.Payment} </Text>
+                                    <TouchableOpacity style={styles.price} onPress={() => updateBeache(item)}>
+                                        <View>
+                                            <Text style={{ fontWeight: 'bold', fontSize: 13, color: "#FFF",marginTop:-4  }}><MaterialIcons
+                                                name="pool"
+                                                size={20}
+                                                color={"#FFF"}
+                                            />  ערוך חוף</Text>
+                                        </View>
+                                    </TouchableOpacity>
                                 </View>
                             </View>
 
@@ -194,6 +210,24 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         justifyContent: 'space-around',
+
+    },
+     price: {
+
+        position: 'relative',
+        marginLeft: "71.7%",
+        height:50,
+        marginBottom:-1,
+        width: 100,
+        backgroundColor: "green",
+        borderBottomRightRadius: 18,
+        borderTopLeftRadius: 25,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: "#000",
+        shadowOpacity: 0.34,
+        shadowRadius: 6.27,
+        elevation: 10,
 
     },
     menu: {

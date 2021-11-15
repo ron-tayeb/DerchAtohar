@@ -140,21 +140,9 @@ class Login extends React.Component {
             })
             .then((result) => {
                 console.log("fetch POST", JSON.stringify(result))
-                if (result.CustomersCode) {
+                if (result) {
                     this.storeData("user", result)
                     this.storeData("date", this.getDateNow())
-                    this.props.navigation.navigate("HomeScreen")
-                }
-                else if (result.DeliveryPersonCode) {
-                    this.storeData("user", result)
-                    this.props.navigation.navigate("DeliveryPersonHomeScreen")
-                }
-                else if (result.KitchenManagersCode) {
-                    this.storeData("user", result)
-                    this.props.navigation.navigate("KitchenManagerHomeScreen")
-                }
-                else if (result.ManagerCode) {
-                    this.storeData("user", result)
                     this.props.navigation.navigate("ManagerHomeScreen")
                 }
                 else {
@@ -192,7 +180,7 @@ class Login extends React.Component {
                                 />
                             </TouchableOpacity>
                             <Image
-                                source={require('../assets/logos/16.png')}
+                                source={require('../assets/logos/26.png')}
                                 resizeMode='contain'
                                 style={{
                                     marginTop: 95,
@@ -351,7 +339,7 @@ class Login extends React.Component {
                                     </View>
                                 </View>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => this.props.navigation.navigate('HomeScreen')}>
+                            <TouchableOpacity onPress={() => this.props.navigation.navigate('ManagerHomeScreen')}>
                                 <Text style={{
                                     fontSize: 18, fontWeight: "bold", color: '#fff', marginBottom:40,marginTop:20, marginLeft: '25%'
                                 }}>המשך ללא התחבורת</Text>

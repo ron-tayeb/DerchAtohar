@@ -9,22 +9,23 @@ import {
     TouchableOpacity,
     Alert,
 } from "react-native";
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Feather from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Geocoder from 'react-native-geocoding';
 
 
 
 
-
-export default function Hlacha({ navigation, route }) {
+export default function ManagrDelPool({ navigation, route }) {
 
     const [menuInSrartApp, setMenu] = useState(false)// בדיקה איזה מנות להציג בעת הפעלת האפליקציה
-
+    const MapAPI = '';
     const [item, setitem] = useState([ //מנות קבועות בעת הפעלת האפליקציה
     ]);
+    const [render, setRender] = useState(false);
 
     const storeData = async (key, value) => {//פעולה המאחסנת באסיינסטורג מידע
         try {
@@ -62,10 +63,9 @@ export default function Hlacha({ navigation, route }) {
 
         return unsubscribe
     }, [])
-    const GetMenu = async (category) => { // משיכת התוכן לפי קטגוריה
-        fetch(`${ServerApi()}/api/getHlacha`, {
-            method: 'POST',
-            body: JSON.stringify(category),
+    const GetMenu = async () => { // משיכת התוכן לפי קטגוריה
+        fetch(`${ServerApi()}/api/GetPools`, {
+            method: 'GET',
             headers: new Headers({
                 'Content-type': 'application/json; charset=UTF-8',
                 'Accept': 'application/json; charset=UTF-8'
@@ -86,8 +86,35 @@ export default function Hlacha({ navigation, route }) {
 
 
     }
+    const deleteProduct = async (item) => {
+        let idPool = item.poolCode
+        console.log(`idPool`, idPool)
+        await fetch(`${ServerApi()}/api/DeletePool`, {
+            method: 'POST',
+            body: JSON.stringify(idPool),
+            headers: new Headers({
+                'Content-type': 'application/json; charset=UTF-8',
+                'Accept': 'application/json; charset=UTF-8'
+            })
+        })
+            .then(res => {
+                return res.json()
+            })
+            .then((result) => {
+                console.log("fetch POST=", result)
+                Alert.alert("ברכות", "בריכה זו הוסר בהצלחה")
+            },
+                (error) => {
+                    console.log("err POST=", error)
+                    Alert.alert("אופס", "ישנה בעיה בעת מחיקת המנה אנא נסה שוב מאוחר יותר")
+                })
+        setRender(true)
 
-
+    }
+  useEffect(() => {
+        setRender(false)
+        GetMenu()
+    }, [render])
 
     return (
         <View style={styles.container}>
@@ -103,7 +130,7 @@ export default function Hlacha({ navigation, route }) {
                         />
                     </TouchableOpacity>
                     <Image
-                        source={require('../assets/logos/24.png')}
+                        source={require('../assets/logos/38.png')}
                         resizeMode='contain'
                         style={{
                             marginTop: 70,
@@ -119,48 +146,6 @@ export default function Hlacha({ navigation, route }) {
                         />
                     </TouchableOpacity>
                 </View>
-                {/* קטגוריות */}
-                <View style={styles.catgor}>
-                    <TouchableOpacity onPress={() => { GetMenu('forWomen') }}>
-                        <Image
-                            source={require('../assets/1.png')}
-                            resizeMode="contain"
-                            style={{
-                                width: 100,
-                                height: 100,
-                                marginLeft:20,
-                                transform: [{scaleX: 1.7}, {scaleY: 1.7}]
-
-                            }}
-                        />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => { GetMenu('tfilaWomen') }}>
-                        <Image
-                            source={require('../assets/5.png')}
-                            resizeMode="contain"
-                            style={{
-                                width: 100,
-                                height: 100,
-                               
-                                transform: [{scaleX: 1.7}, {scaleY: 1.7}]
-                            }}
-                        />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={() => { GetMenu('tfilaMen') }}>
-                        <Image
-                            source={require('../assets/4.png')}
-                            resizeMode='contain'
-                            style={{
-                                width: 100,
-                                height: 100,
-                                marginRight:20,
-                                transform: [{scaleX: 1.7}, {scaleY: 1.7}]
-                            }}
-                        />
-                    </TouchableOpacity>
-                </View>
-                {/* הצגת הלכות */}
                 <ScrollView style={{ marginBottom: 20 }}>
                     {item.map((item, index) => (
                         <View key={index}>
@@ -168,14 +153,40 @@ export default function Hlacha({ navigation, route }) {
                                 <View style={{
                                     backgroundColor: "#FFF",
                                     width: "92%",
-
+                                    height: 200,
                                     marginRight: 15,
                                     marginLeft: 15,
-                                    borderRadius: 18,
+                                    borderTopLeftRadius: 18,
+                                    borderTopRightRadius: 18,
+                                    marginTop: 40,
+                                    margin: -30
+                                }}>
+
+                                      <Image  source={{ uri: `${item.image}`}} resizeMode='cover' style={{flex:1,borderRadius:18,width:'100%'}} ></Image>
+                                </View>
+                                <View style={{
+                                    backgroundColor: "#FFF",
+                                    width: "92%",
+                                    borderBottomLeftRadius: 18,
+                                    borderBottomRightRadius: 18,
+                                    marginRight: 15,
+                                    marginLeft: 15,
                                     margin: 15,
                                 }}>
-                                    <Text style={{ marginLeft: 15, marginTop: 2, color: '#0A268F', fontWeight: 'bold', fontSize: 16, }}>{item.Title}</Text>
-                                    <Text style={styles.desc}>{item.Content} </Text>
+                                    <Text style={{ marginLeft: 15, marginTop: 2, color: '#0A268F', fontWeight: 'bold', fontSize: 17, }}>{item.Name}</Text>
+                                    <Text style={styles.desc}>מגדר: {item.MenOrWomen} </Text>
+                                    <Text style={styles.desc}>שעות פתיחה: {item.OpemimgHours} </Text>
+                                    <Text style={styles.desc}>כתובת: {item.Address} </Text>
+                                    <Text style={styles.desc}>מחיר: {item.Payment} </Text>
+                                    <TouchableOpacity style={styles.price} onPress={() => deleteProduct(item)}>
+                                    <View>
+                                        <Text style={{ fontWeight: 'bold', fontSize: 13, color: "#FFF" }}><MaterialCommunityIcons
+                                            name="delete"
+                                            size={25}
+                                            color={"#FFF"}
+                                        />הסר בריכה</Text>
+                                    </View>
+                                </TouchableOpacity>
                                 </View>
                             </View>
 
@@ -196,6 +207,24 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
 
     },
+    price: {
+
+        position: 'relative',
+        marginLeft: "71.7%",
+        height: 50,
+        marginBottom: -1,
+        width: 100,
+        backgroundColor: "red",
+        borderBottomRightRadius: 18,
+        borderTopLeftRadius: 25,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: "#000",
+        shadowOpacity: 0.34,
+        shadowRadius: 6.27,
+        elevation: 10,
+
+    },
     menu: {
         marginTop: 50,
         color: '#FFF',
@@ -212,11 +241,14 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        marginTop:20
+        marginTop: 20
     },
     image: {
+        borderTopLeftRadius: 18,
+        borderTopRightRadius: 18,
         flex: 1,
         resizeMode: "cover",
+        
         // justifyContent: "flex-start"
     },
 

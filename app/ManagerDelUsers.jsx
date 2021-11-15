@@ -127,7 +127,7 @@ export default function ManagerDelUsers({ navigation, route }) {
                         />
                     </TouchableOpacity>
                     <Image
-                        source={require('../assets/logos/16.png')}
+                        source={require('../assets/logos/37.png')}
                         resizeMode='contain'
                         style={{
                             marginTop: 70,

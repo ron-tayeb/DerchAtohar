@@ -138,7 +138,7 @@ export default function UpdateMikve({ navigation, route }) {
                         />
                     </TouchableOpacity>
                     <Image
-                        source={require('../assets/logos/16.png')}
+                        source={require('../assets/logos/33.png')}
                         resizeMode='contain'
                         style={{
                             marginTop: 70,

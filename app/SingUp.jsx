@@ -34,6 +34,7 @@ class SingUp extends React.Component {
         }
     }
 
+
     ServerApi() {// הלוקל הוסט
         const api = `http://proj3.ruppin-tech.co.il`
         return api
@@ -76,6 +77,7 @@ class SingUp extends React.Component {
     }
     CreateUser = async () => {// ביצוע הרשמה לטבלת נתונים
         let token = await this.registerForPushNotificationsAsync()
+        this.setState({token: token})
         console.log("token", token)
         const user = {
             Name: this.state.name,
@@ -86,7 +88,7 @@ class SingUp extends React.Component {
         }
         console.log("user",user)
 
-        fetch(`${this.ServerApi()}/api/createNewuser`, {
+        await fetch(`${this.ServerApi()}/api/createNewuser`, {
             method: 'POST',
             body: JSON.stringify(user),
             headers: new Headers({
@@ -98,9 +100,10 @@ class SingUp extends React.Component {
                 console.log('res=', JSON.stringify(res))
                 return res.json()
             })
-            .then((result) => {
+            .then(async(result) => {
                 console.log("fetch POST", JSON.stringify(result))
                 if (JSON.stringify(result) == 1) {
+                   await this.sendPush();
                     Alert.alert("כל הכבוד", "נרשמת בהצלחה, כעת נשאר רק להתחבר")
                     this.props.navigation.navigate("loginScreen")
                 }
@@ -186,6 +189,33 @@ class SingUp extends React.Component {
         return token;
     }
 
+    async  sendPush() {
+        console.log(`this.state.token`, this.state.token)
+        await fetch(`https://exp.host/--/api/v2/push/send`, {
+            method: 'POST',
+            body: JSON.stringify({
+                to: this.state.token,
+                title: "ברכות 💯",
+                body: 'ברוך הבא לאפליקצית דרך הטוהר , כעת קיבלת הרשאות מיוחדת,גלישה נעימה',
+                data: { data: 'goes here' },
+            }),
+            headers: new Headers({
+                'Content-type': 'application/json; charset=UTF-8',
+                'Accept': 'application/json; charset=UTF-8'
+            })
+        })
+            .then(res => {
+                return res.json()
+            })
+            .then((result) => {
+                console.log(`result`, result)
+            },
+                (error) => {
+                    console.log("err POST=", error)
+                })
+    }
+
+
     render() {
         return (
             <View style={[styles.container]}>
@@ -199,7 +229,7 @@ class SingUp extends React.Component {
                             />
                         </TouchableOpacity>
                         <Image
-                            source={require('../assets/logos/16.png')}
+                            source={require('../assets/logos/25.png')}
                             resizeMode='contain'
                             style={{
                                 marginTop: 95,

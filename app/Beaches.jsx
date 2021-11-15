@@ -114,7 +114,7 @@ const getloc=(name)=>{
                         />
                     </TouchableOpacity>
                     <Image
-                        source={require('../assets/logos/16.png')}
+                        source={require('../assets/logos/21.png')}
                         resizeMode='contain'
                         style={{
                             marginTop: 70,

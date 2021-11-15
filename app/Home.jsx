@@ -226,7 +226,7 @@ export default function Home({ navigation, route }) {
                         />
                     </TouchableOpacity>
                     <Image
-                        source={require('../assets/logos/16.png')}
+                        source={require('../assets/logos/22.png')}
                         resizeMode='contain'
                         style={{
                             marginTop: 70,
